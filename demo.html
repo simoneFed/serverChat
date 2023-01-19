@@ -16,8 +16,10 @@
     let messaggio = document.getElementById("msg").value; //prendo il testo tramite id
     ws.send( messaggio );  //mando il messaggio al server
     console.log(messaggio+""); //ho aggiunto un console.log per stampare il messaggio 
+    msg.value="";
   }
   function chiudiLaConnessione(){
+    ws.send( "uscire" );
     ws.close();  
   }
 

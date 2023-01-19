@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Login</title>
+<style>
+  #secondaPagina {
+    display : none;
+  }
+</style>
+
+<script>
+  "use strict";
+  let ws = new WebSocket("ws://10.1.0.52:8080/serverchat/textChat");
+
+  let x = document.getElementById("primaPagina");
+
+  let accesso= false;
+  
+  ws.onmessage = gestoreRicezione;
+
+  function gestoreRicezione(messaggio){    
+    if(messaggio.data == "auth|benvenuto"){
+      accesso = true;
+    }
+    if(accesso == true){
+      primaPagina.style.display = "none";
+      secondaPagina.style.display = "block";
+      document.getElementById("stampa").textContent += messaggio.data +"\n";
+    }
+    
+  }
+  function inviaAlServer(){
+    let messaggio = "login|"+document.getElementById("username").value+"|"
+    +document.getElementById("password").value;
+    console.log(messaggio)
+    ws.send(messaggio);  
+  }
+  function inviaMessaggio(){
+    let messaggio = document.getElementById("testo").value;
+    ws.send(messaggio);
+  }
+
+
+</script>
+</head>
+<body>
+    <div id="primaPagina">
+      <b>USERNAME</b><input id="username" type="text" ></br>
+      <b>PASSWORD</b><input id="password" type="text" ></br>
+      </br><button onClick="inviaAlServer()" type="submit">Login</button></br>
+    </div>
+    <div id ="secondaPagina">
+      <textarea readonly id="stampa"></textarea><br>
+      <input id="testo" type="text" >
+      <button onClick="inviaMessaggio()" type="submit">Invia</button>
+    </div>
+    
+</body>
+</html>
