@@ -1,10 +1,12 @@
 
 var http = require('http');
 const { prependListener } = require('process');
+const { measureMemory } = require('vm');
 var WebSocketServer = require('websocket').server;
 let personeCollegate = [];
+let UntentiCollegati =[];
 let persona;
-let listaPersone ="";
+let listaPersone = "";
 
 var WebSocketServer = require('websocket').server;
 const { client } = require('websocket');
@@ -34,31 +36,39 @@ wsServer.on('request', function (request) {
   }
 
   var connection = request.accept(null, request.origin);
-  
+
   console.log("si è connesso " + connection.remoteAddress);
-  personeCollegate.push(connection);
   connection.on('message', function (message) {
 
-    console.log("le persone collegate sono:" + personeCollegate.length);
+      if(message.utf8Data.split("|")[2] == "root"){
+        
+        personeCollegate.push(connection);
+        UntentiCollegati.push(connection.nome= "|"+message.utf8Data.split("|")[1]);
+        console.log("le persone collegate sono:" + personeCollegate.length);
+        console.log("ha eseguito l'accesso l'utente: "+ message.utf8Data.split("|")[1]);
+        //console.log("utenti collegati: " + UntentiCollegati);
+        connection.sendUTF("lista"+connection.nome);
+      if (message.type === 'utf8') {
+        for (i = 0; i <= personeCollegate.length - 1; i++) {
+          persona = personeCollegate[i];
+          //console.log(i + "===" + persona);
+          persona.sendUTF("auth|benvenuto");
+          
+        }
 
-    if (message.type === 'utf8') {
-      console.log('Received Message: ' + message.utf8Data);
-      for (i = 0; i <= personeCollegate.length - 1; i++) {
-        persona = personeCollegate[i];
-        console.log(i + "===" + persona);
-        persona.sendUTF(message.utf8Data);
       }
+      connection.on("close", function () {
+        persona.sendUTF(message.utf8Data);
+        for (let i = 0; i < personeCollegate.length; i++) {
+          if (this == personeCollegate[i]) {
+            personeCollegate.splice(i, 1);
+            UntentiCollegati.splice(i,1);
+          }
+        }
+      });
+    }else{
 
     }
-    connection.on("close", function () {
-      persona.sendUTF(message.utf8Data);
-      for (let i = 0; i < personeCollegate.length; i++) {
-        if (this == personeCollegate[i]) {
-          personeCollegate.splice(i, 1);          
-        }
-      }
-    });
-
   });
 });
 
