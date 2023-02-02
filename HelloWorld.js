@@ -4,7 +4,7 @@ const { prependListener } = require('process');
 const { measureMemory } = require('vm');
 var WebSocketServer = require('websocket').server;
 let personeCollegate = [];
-let UntentiCollegati =[];
+let utenti = "";
 let persona;
 let listaPersone = "";
 
@@ -39,35 +39,41 @@ wsServer.on('request', function (request) {
 
   console.log("si è connesso " + connection.remoteAddress);
   connection.on('message', function (message) {
+    if (message.utf8Data.split("|")[0] == "msg"){
+      //mando il messaggio a tutti
 
-      if(message.utf8Data.split("|")[2] == "root"){
-        
-        personeCollegate.push(connection);
-        UntentiCollegati.push(connection.nome= "|"+message.utf8Data.split("|")[1]);
-        console.log("le persone collegate sono:" + personeCollegate.length);
-        console.log("ha eseguito l'accesso l'utente: "+ message.utf8Data.split("|")[1]);
-        //console.log("utenti collegati: " + UntentiCollegati);
-        connection.sendUTF("lista"+connection.nome);
+
+
+    }else if (message.utf8Data.split("|")[2] == "root") {
+      connection.nome = message.utf8Data.split("|")[1];
+      personeCollegate.push(connection);
+      //console.log("le persone collegate sono:" + personeCollegate.length);
+      //console.log("ha eseguito l'accesso l'utente: " + message.utf8Data.split("|")[1]);
+
+      connection.sendUTF("lista" + connection.nome);
       if (message.type === 'utf8') {
-        for (i = 0; i <= personeCollegate.length - 1; i++) {
-          persona = personeCollegate[i];
-          //console.log(i + "===" + persona);
-          persona.sendUTF("auth|benvenuto");
-          
+        //console.log(personeCollegate);
+        for (let i = 0; i < personeCollegate.length; i++) {
+          utenti += "|" + personeCollegate[i].nome;
         }
-
+        for (let c = 0; c <= personeCollegate.length - 1; c++) {
+          persona = personeCollegate[c];
+          persona.sendUTF("auth|benvenuto");
+          persona.sendUTF("lista" + utenti);
+        }
+        utenti ="";
       }
       connection.on("close", function () {
         persona.sendUTF(message.utf8Data);
         for (let i = 0; i < personeCollegate.length; i++) {
           if (this == personeCollegate[i]) {
             personeCollegate.splice(i, 1);
-            UntentiCollegati.splice(i,1);
+            UntentiCollegati.splice(i, 1);
           }
         }
       });
-    }else{
-
+    } else {
+      connection.sendUTF("auth|fallito");
     }
   });
 });
